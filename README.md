@@ -23,3 +23,13 @@ npm run start:backend:core
 
 These commands are proxied to `mobile/` so running from root is safe.
 
+## Run backend with Yarn
+
+```bash
+cd backend
+yarn install
+yarn db:migrate
+yarn db:seed
+yarn dev
+```
+

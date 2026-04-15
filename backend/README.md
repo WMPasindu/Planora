@@ -30,12 +30,12 @@ This folder now hosts the full Planora backend as Node/Express microservices.
 2. Start infra:
    - `docker compose up -d`
 3. Install dependencies:
-   - `npm install`
+   - `yarn install`
 4. Run DB setup:
-   - `npm run db:migrate`
-   - `npm run db:seed`
+   - `yarn db:migrate`
+   - `yarn db:seed`
 5. Start services:
-   - `npm run dev`
+   - `yarn dev`
 
 Gateway runs on `http://localhost:4000`.
 
