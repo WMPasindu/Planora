@@ -43,7 +43,6 @@ Gateway runs on `http://localhost:4000`.
 
 - Active migration source is now:
   - `packages/shared-db/migrations/001_init.sql`
-- Old Supabase SQL files are retained as historical reference only.
 
 ## Mobile env
 
