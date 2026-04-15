@@ -1,0 +1,42 @@
+{
+  "name": "planora-backend",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm --workspace @planora/auth-service run dev\" \"npm --workspace @planora/profile-service run dev\" \"npm --workspace @planora/goals-service run dev\" \"npm --workspace @planora/checkins-service run dev\" \"npm --workspace @planora/preferences-service run dev\" \"npm --workspace @planora/subscriptions-service run dev\" \"npm --workspace @planora/notifications-service run dev\" \"npm --workspace @planora/analytics-service run dev\" \"npm --workspace @planora/api-gateway run dev\"",
+    "dev:core": "concurrently \"npm --workspace @planora/auth-service run dev\" \"npm --workspace @planora/profile-service run dev\" \"npm --workspace @planora/goals-service run dev\" \"npm --workspace @planora/checkins-service run dev\" \"npm --workspace @planora/preferences-service run dev\" \"npm --workspace @planora/api-gateway run dev\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:migrate": "tsx packages/shared-db/src/migrate.ts",
+    "db:seed": "tsx packages/shared-db/src/seed.ts",
+    "db:reset": "npm run db:migrate && npm run db:seed",
+    "migrate:supabase-export": "tsx scripts/migrate-from-supabase.ts",
+    "verify:migration": "tsx scripts/verify-migration.ts",
+    "test:smoke": "tsx tests/smoke.ts"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.9.0",
+    "@types/pg": "^8.15.5",
+    "@types/uuid": "^10.0.0",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "ioredis": "^5.8.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "uuid": "^13.0.0"
+  }
+}
+

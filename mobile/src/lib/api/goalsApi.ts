@@ -1,25 +1,17 @@
 import type { TrackedGoal } from '@/types';
 
 import { mapGoalModelToInsert, mapGoalRowToModel, type GoalRow } from '@/lib/mappers/goalsMapper';
-import { getCurrentUserId, supabase } from '@/lib/supabase/client';
+import { apiRequest } from './client';
 
 export async function fetchGoals(): Promise<TrackedGoal[]> {
-  const userId = await getCurrentUserId();
-  const { data, error } = await supabase
-    .from('goals')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return (data as GoalRow[]).map(mapGoalRowToModel);
+  const data = await apiRequest<GoalRow[]>('/v1/goals');
+  return data.map(mapGoalRowToModel);
 }
 
 export async function createGoalRemote(goal: TrackedGoal): Promise<TrackedGoal> {
-  const userId = await getCurrentUserId();
-  const payload = mapGoalModelToInsert(goal, userId);
-  const { data, error } = await supabase.from('goals').insert(payload).select('*').single();
-  if (error) throw error;
-  return mapGoalRowToModel(data as GoalRow);
+  const payload = mapGoalModelToInsert(goal);
+  const data = await apiRequest<GoalRow>('/v1/goals', { method: 'POST', body: payload });
+  return mapGoalRowToModel(data);
 }
 
 export async function updateGoalRemote(id: string, patch: Partial<TrackedGoal>): Promise<TrackedGoal> {
@@ -41,13 +33,11 @@ export async function updateGoalRemote(id: string, patch: Partial<TrackedGoal>):
   if (patch.scheduleEndMinutes !== undefined) payload.schedule_end_minutes = patch.scheduleEndMinutes;
   if (patch.excludedDates !== undefined) payload.excluded_dates = patch.excludedDates;
 
-  const { data, error } = await supabase.from('goals').update(payload).eq('id', id).select('*').single();
-  if (error) throw error;
-  return mapGoalRowToModel(data as GoalRow);
+  const data = await apiRequest<GoalRow>(`/v1/goals/${id}`, { method: 'PATCH', body: payload });
+  return mapGoalRowToModel(data);
 }
 
 export async function removeGoalRemote(id: string): Promise<void> {
-  const { error } = await supabase.from('goals').delete().eq('id', id);
-  if (error) throw error;
+  await apiRequest(`/v1/goals/${id}`, { method: 'DELETE' });
 }
 

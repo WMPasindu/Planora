@@ -70,13 +70,13 @@ export function LoginScreen() {
 
     try {
       setSubmitting(true);
-      await signInWithEmailPassword(email, password);
+      const auth = await signInWithEmailPassword(email, password);
       const profile = await fetchProfile();
       if (!profile) {
         setDialog({ title: 'Sign-in failed', message: 'We could not load your profile.' });
         return;
       }
-      signIn(profile, { verified: true });
+      signIn(profile, { verified: auth.emailVerified });
       setUser(profile);
       await Promise.all([syncGoals(), syncActivity(), syncPrefs()]);
       replaceToDashboard();

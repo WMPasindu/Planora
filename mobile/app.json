@@ -38,8 +38,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "SUPABASE_URL": "https://sczmmkvwccbfeltpwbce.supabase.co",
-      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjem1ta3Z3Y2NiZmVsdHB3YmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDQyNTIsImV4cCI6MjA5MTgyMDI1Mn0.2nrsfNY5sMLQr9LJtCYl3Y9eAp8rWO7JT0ir212I0RQ"
+      "API_BASE_URL": "http://localhost:4000"
     }
   }
 }

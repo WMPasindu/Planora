@@ -1,37 +1,42 @@
-# Planora Backend Architecture
+# Planora Backend Architecture (Node/Express)
 
-## Scope
+## Service topology
 
-This backend supports:
+- `api-gateway`: entry point for mobile/web clients
+- `auth-service`: identity, credentials, sessions
+- `profile-service`: account profile
+- `goals-service`: planner goals CRUD
+- `checkins-service`: check-in activity
+- `preferences-service`: app/notification preferences
+- `subscriptions-service`: billing state and webhook ingestion
+- `notifications-service`: notification projections
+- `analytics-service`: analytics projections and summary
 
-- User auth and profile state
-- Goals/planner and recurrence exceptions
-- Activity check-ins
-- App and notification preferences
-- Subscription-ready schema and event pipeline
+## Storage and eventing
 
-## Data domains
+- PostgreSQL as system of record (see `packages/shared-db/migrations/001_init.sql`)
+- Redis pub/sub event bus for cross-service domain events
 
-- `profiles`
-- `goals`
-- `check_ins`
-- `notification_preferences`
-- `app_preferences`
-- `plans` (catalog)
-- `subscriptions` (user billing state)
-- `subscription_events` (webhook inbox/audit)
+## Security model
 
-## Security
+- JWT access + refresh token rotation
+- Gateway validates access token and forwards user context headers:
+  - `x-user-id`
+  - `x-user-email`
+- Services trust only gateway-authenticated context
 
-- Row Level Security enabled on all user-owned tables
-- Policies enforce `user_id = auth.uid()`
-- `plans` is read-only public for active rows
-- service role key only for server-side jobs/webhooks
+## Runtime flow
+
+1. Client authenticates via `/v1/auth/*`
+2. Gateway validates JWT on protected routes
+3. Request proxied to target service
+4. Domain services persist state to Postgres
+5. Domain events published to Redis and consumed by notifications/analytics
 
 ## Migration strategy
 
-1. Apply `001_planora_core.sql`
-2. Verify RLS policies
-3. Backfill/migrate local app data
-4. Enable app remote-first store writes
+1. Initialize DB with Node-owned migrations.
+2. Import Supabase export using `scripts/migrate-from-supabase.ts`.
+3. Verify migration counts using `scripts/verify-migration.ts`.
+4. Switch mobile API base URL to gateway endpoint.
 

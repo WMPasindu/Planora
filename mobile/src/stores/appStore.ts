@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { fetchProfile } from '@/lib/api/profileApi';
-import { supabase } from '@/lib/supabase/client';
+import { clearAuthTokens, hasStoredSession } from '@/lib/api/client';
 import type { User } from '@/types';
 
 type AppState = {
@@ -37,10 +37,8 @@ export const useAppStore = create<AppState>()(
       completeOnboarding: () => set({ hasCompletedOnboarding: true }),
       bootstrapAuthSession: async () => {
         try {
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          if (!session?.user) {
+          const sessionExists = await hasStoredSession();
+          if (!sessionExists) {
             set({
               authBootstrapped: true,
               isAuthenticated: false,
@@ -51,18 +49,23 @@ export const useAppStore = create<AppState>()(
           }
 
           const profile = await fetchProfile().catch(() => null);
-          const user: User = profile ?? {
-            id: session.user.id,
-            email: session.user.email ?? '',
-            displayName:
-              (session.user.user_metadata?.display_name as string | undefined) ?? undefined,
-          };
+          if (!profile) {
+            await clearAuthTokens();
+            set({
+              authBootstrapped: true,
+              isAuthenticated: false,
+              emailVerified: true,
+              user: null,
+            });
+            return;
+          }
+          const user: User = profile;
 
           set({
             authBootstrapped: true,
             isAuthenticated: true,
             user,
-            emailVerified: Boolean(session.user.email_confirmed_at),
+            emailVerified: true,
           });
         } catch {
           set({ authBootstrapped: true });
@@ -76,14 +79,16 @@ export const useAppStore = create<AppState>()(
         }),
       setUser: (user) => set({ user }),
       markEmailVerified: () => set({ emailVerified: true }),
-      signOut: () =>
+      signOut: () => {
+        void clearAuthTokens();
         set({
           authBootstrapped: true,
           isAuthenticated: false,
           user: null,
           emailVerified: true,
           notificationBadgeCount: 0,
-        }),
+        });
+      },
       setNotificationBadgeCount: (n) =>
         set({ notificationBadgeCount: Math.max(0, Math.floor(n)) }),
       clearNotificationBadge: () => set({ notificationBadgeCount: 0 }),

@@ -1,0 +1,15 @@
+{
+  "name": "@planora/checkins-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@planora/shared-db": "*",
+    "@planora/shared-events": "*",
+    "@planora/shared-utils": "*"
+  }
+}
+

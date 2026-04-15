@@ -4,6 +4,11 @@
   "scripts": {
     "start": "npm --prefix mobile run start",
     "start:clear": "npm --prefix mobile run start -- --clear",
+    "start:backend": "npm --prefix backend run dev",
+    "start:backend:core": "npm --prefix backend run dev:core",
+    "backend:migrate": "npm --prefix backend run db:migrate",
+    "backend:seed": "npm --prefix backend run db:seed",
+    "backend:reset": "npm --prefix backend run db:reset",
     "android": "npm --prefix mobile run android",
     "ios": "npm --prefix mobile run ios",
     "web": "npm --prefix mobile run web",

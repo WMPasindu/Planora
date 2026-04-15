@@ -1,0 +1,11 @@
+{
+  "name": "@planora/shared-events",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@planora/shared-utils": "*"
+  }
+}
+

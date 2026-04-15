@@ -1,38 +1,55 @@
-# Planora Backend (Supabase)
+# Planora Backend (Node + Express Microservices)
 
-This folder contains the backend assets for Planora:
+This folder now hosts the full Planora backend as Node/Express microservices.
 
-- SQL migrations for PostgreSQL schema and RLS
-- Edge function skeletons
-- backend docs and rollout notes
+## Services
 
-## Structure
+- `services/api-gateway`: single public API entry for mobile/web clients
+- `services/auth-service`: register, login, refresh, logout, reset password, email verify
+- `services/profile-service`: profile read/update
+- `services/goals-service`: planner goals CRUD
+- `services/checkins-service`: activity check-ins CRUD
+- `services/preferences-service`: app + notification preferences
+- `services/subscriptions-service`: subscription read + webhook ingestion
+- `services/notifications-service`: notification event projection
+- `services/analytics-service`: summary + analytics projections
 
-- `supabase/migrations` - versioned SQL schema changes
-- `supabase/functions` - edge function handlers
-- `docs` - architecture and operational notes
+## Shared packages
 
-## Apply migrations
+- `packages/shared-db`: PostgreSQL pool + migration + seed scripts
+- `packages/shared-auth`: JWT signing/verification
+- `packages/shared-events`: Redis event bus publish/subscribe
+- `packages/shared-types`: shared domain interfaces
+- `packages/shared-utils`: env and app bootstrap helpers
+- `packages/shared-logger`: structured logging helper
 
-You can apply SQL in two ways:
+## Quick start (local)
 
-1. Supabase Dashboard SQL editor (manual)
-2. Supabase MCP `apply_migration` (recommended for tracked runs)
+1. Copy env:
+   - `cp .env.example .env`
+2. Start infra:
+   - `docker compose up -d`
+3. Install dependencies:
+   - `npm install`
+4. Run DB setup:
+   - `npm run db:migrate`
+   - `npm run db:seed`
+5. Start services:
+   - `npm run dev`
 
-Primary migration file:
+Gateway runs on `http://localhost:4000`.
 
-- `supabase/migrations/001_planora_core.sql`
+## Database migration ownership
 
-## Required env values in app
+- Active migration source is now:
+  - `packages/shared-db/migrations/001_init.sql`
+- Old Supabase SQL files are retained as historical reference only.
 
-The mobile app expects:
+## Mobile env
 
-- `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+Mobile app should point to:
 
-For server-side privileged workflows only:
+- `EXPO_PUBLIC_API_BASE_URL=http://localhost:4000`
 
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-Never ship service role keys to the client app.
+in Expo config/env.
 
