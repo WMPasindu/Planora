@@ -3,7 +3,7 @@
 ## Folders
 
 - `mobile/` - Expo React Native app
-- `backend/` - Supabase migrations, backend docs, edge functions, backend API modules
+- `backend/` - Node/Express microservices backend (gateway + domain services)
 - `frontend/` - Web app (placeholder)
 
 ## Run mobile app from repo root
@@ -18,6 +18,7 @@ Other useful commands:
 npm run android
 npm run ios
 npm run typecheck
+npm run start:backend:core
 ```
 
 These commands are proxied to `mobile/` so running from root is safe.

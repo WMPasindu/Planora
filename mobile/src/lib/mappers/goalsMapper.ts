@@ -20,7 +20,7 @@ export type GoalRow = {
   excluded_dates: string[];
 };
 
-export type GoalInsert = Omit<GoalRow, 'created_at'>;
+export type GoalInsert = Omit<GoalRow, 'created_at' | 'user_id'>;
 
 export function mapGoalRowToModel(row: GoalRow): TrackedGoal {
   return {
@@ -43,10 +43,9 @@ export function mapGoalRowToModel(row: GoalRow): TrackedGoal {
   };
 }
 
-export function mapGoalModelToInsert(goal: TrackedGoal, userId: string): GoalInsert {
+export function mapGoalModelToInsert(goal: TrackedGoal): GoalInsert {
   return {
     id: goal.id,
-    user_id: userId,
     title: goal.title,
     logged: goal.logged,
     target: goal.target,

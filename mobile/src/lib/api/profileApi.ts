@@ -1,52 +1,35 @@
 import type { User } from '@/types';
 
-import { getCurrentUserId, supabase } from '@/lib/supabase/client';
-
-type ProfileRow = {
-  id: string;
-  email: string | null;
-  display_name: string | null;
-};
+import { apiRequest } from './client';
 
 export async function fetchProfile(): Promise<User | null> {
-  const userId = await getCurrentUserId();
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id,email,display_name')
-    .eq('id', userId)
-    .single();
-  if (error) throw error;
-  if (!data) return null;
-  const row = data as ProfileRow;
+  const row = await apiRequest<{
+    id: string;
+    email: string;
+    displayName?: string;
+    emailVerified?: boolean;
+  } | null>('/v1/profile');
+  if (!row) return null;
   return {
     id: row.id,
     email: row.email ?? '',
-    displayName: row.display_name ?? undefined,
+    displayName: row.displayName ?? undefined,
   };
 }
 
 export async function updateProfile(input: { displayName?: string; email?: string }): Promise<void> {
-  const userId = await getCurrentUserId();
-  if (input.email) {
-    const { error: authErr } = await supabase.auth.updateUser({ email: input.email });
-    if (authErr) throw authErr;
-  }
-  if (input.displayName !== undefined) {
-    const { error: profileErr } = await supabase
-      .from('profiles')
-      .update({ display_name: input.displayName })
-      .eq('id', userId);
-    if (profileErr) throw profileErr;
-  }
+  await apiRequest('/v1/profile', { method: 'PATCH', body: input });
 }
 
 export async function changePassword(newPassword: string): Promise<void> {
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
-  if (error) throw error;
+  throw new Error(`Direct password change is not supported. Use reset flow.`);
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase());
-  if (error) throw error;
+  await apiRequest('/v1/auth/request-password-reset', {
+    method: 'POST',
+    auth: false,
+    body: { email: email.trim().toLowerCase() },
+  });
 }
 

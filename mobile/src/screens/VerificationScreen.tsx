@@ -12,6 +12,7 @@ import {
   Text,
   TextField,
 } from '@/components';
+import { verifyEmailToken } from '@/lib/api/authApi';
 import { routes, useAppNavigation } from '@/navigation';
 import { useAppStore } from '@/stores/appStore';
 import { theme } from '@/theme';
@@ -21,7 +22,6 @@ export function VerificationScreen() {
   const { replaceToDashboard } = useAppNavigation();
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const alreadyVerified = useAppStore((s) => s.emailVerified);
-  const bootstrapAuthSession = useAppStore((s) => s.bootstrapAuthSession);
   const markEmailVerified = useAppStore((s) => s.markEmailVerified);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>();
@@ -38,13 +38,15 @@ export function VerificationScreen() {
       return;
     }
     setError(undefined);
-    await bootstrapAuthSession();
-    if (useAppStore.getState().emailVerified) {
-      goMain();
+    const verified = await verifyEmailToken(code)
+      .then(() => true)
+      .catch(() => false);
+    if (!verified) {
+      setDialogVisible(true);
       return;
     }
-    setDialogVisible(true);
-  }, [bootstrapAuthSession, code, goMain]);
+    goMain();
+  }, [code, goMain]);
 
   if (!isAuthenticated) return <Redirect href={routes.auth.login} />;
   if (alreadyVerified) return <Redirect href={routes.main.dashboard} />;

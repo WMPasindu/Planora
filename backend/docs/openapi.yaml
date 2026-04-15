@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Planora Gateway API
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+paths:
+  /v1/auth/register:
+    post:
+      summary: Register user
+  /v1/auth/login:
+    post:
+      summary: Login user
+  /v1/auth/refresh:
+    post:
+      summary: Refresh access token
+  /v1/profile:
+    get:
+      summary: Get profile
+    patch:
+      summary: Update profile
+  /v1/goals:
+    get:
+      summary: List goals
+    post:
+      summary: Create goal
+  /v1/goals/{id}:
+    patch:
+      summary: Update goal
+    delete:
+      summary: Delete goal
+  /v1/check-ins:
+    get:
+      summary: List check-ins
+    post:
+      summary: Create check-in
+  /v1/preferences:
+    get:
+      summary: Get preferences
+    put:
+      summary: Save preferences
+  /v1/subscriptions/current:
+    get:
+      summary: Get current subscription
+  /v1/notifications/events:
+    get:
+      summary: List notification events
+  /v1/analytics/summary:
+    get:
+      summary: Get analytics summary
+

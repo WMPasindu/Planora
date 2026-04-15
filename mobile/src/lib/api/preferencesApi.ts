@@ -1,6 +1,6 @@
 import type { CheckInFrequency, ThemePreference } from '@/stores/preferencesStore';
 
-import { getCurrentUserId, supabase } from '@/lib/supabase/client';
+import { apiRequest } from './client';
 
 export type RemotePreferences = {
   achievementAlerts: boolean;
@@ -17,53 +17,49 @@ export type RemotePreferences = {
 };
 
 export async function fetchPreferences(): Promise<RemotePreferences | null> {
-  const userId = await getCurrentUserId();
-  const [{ data: appData, error: appErr }, { data: notifData, error: notifErr }] = await Promise.all([
-    supabase.from('app_preferences').select('*').eq('user_id', userId).single(),
-    supabase.from('notification_preferences').select('*').eq('user_id', userId).single(),
-  ]);
-  if (appErr) throw appErr;
-  if (notifErr) throw notifErr;
+  const data = await apiRequest<{
+    app: Record<string, unknown> | null;
+    notifications: Record<string, unknown> | null;
+  }>('/v1/preferences');
+  const appData = data.app;
+  const notifData = data.notifications;
   if (!appData || !notifData) return null;
 
   return {
-    achievementAlerts: appData.achievement_alerts,
-    missedGapAlerts: appData.missed_gap_alerts,
-    dailyAccountability: notifData.daily_accountability,
-    weeklySummary: notifData.weekly_summary,
-    customGoalReminders: notifData.custom_goal_reminders,
-    deepFocusMode: notifData.deep_focus_mode,
-    reflectionHour: notifData.reflection_hour,
-    reflectionMinute: notifData.reflection_minute,
-    checkInFrequency: notifData.check_in_frequency,
-    themePreference: appData.theme_preference,
-    lastSyncAt: appData.last_sync_at ? new Date(appData.last_sync_at).getTime() : null,
+    achievementAlerts: Boolean(appData.achievement_alerts),
+    missedGapAlerts: Boolean(appData.missed_gap_alerts),
+    dailyAccountability: Boolean(notifData.daily_accountability),
+    weeklySummary: Boolean(notifData.weekly_summary),
+    customGoalReminders: Boolean(notifData.custom_goal_reminders),
+    deepFocusMode: Boolean(notifData.deep_focus_mode),
+    reflectionHour: Number(notifData.reflection_hour ?? 20),
+    reflectionMinute: Number(notifData.reflection_minute ?? 0),
+    checkInFrequency: (notifData.check_in_frequency as CheckInFrequency) ?? 'daily',
+    themePreference: (appData.theme_preference as ThemePreference) ?? 'light',
+    lastSyncAt: appData.last_sync_at ? new Date(String(appData.last_sync_at)).getTime() : null,
   };
 }
 
 export async function savePreferences(prefs: RemotePreferences): Promise<void> {
-  const userId = await getCurrentUserId();
-  const [{ error: appErr }, { error: notifErr }] = await Promise.all([
-    supabase.from('app_preferences').upsert({
-      user_id: userId,
-      achievement_alerts: prefs.achievementAlerts,
-      missed_gap_alerts: prefs.missedGapAlerts,
-      theme_preference: prefs.themePreference,
-      last_sync_at: prefs.lastSyncAt ? new Date(prefs.lastSyncAt).toISOString() : null,
-    }),
-    supabase.from('notification_preferences').upsert({
-      user_id: userId,
-      daily_accountability: prefs.dailyAccountability,
-      weekly_summary: prefs.weeklySummary,
-      custom_goal_reminders: prefs.customGoalReminders,
-      deep_focus_mode: prefs.deepFocusMode,
-      reflection_hour: prefs.reflectionHour,
-      reflection_minute: prefs.reflectionMinute,
-      check_in_frequency: prefs.checkInFrequency,
-    }),
-  ]);
-
-  if (appErr) throw appErr;
-  if (notifErr) throw notifErr;
+  await apiRequest('/v1/preferences', {
+    method: 'PUT',
+    body: {
+      app: {
+        achievementAlerts: prefs.achievementAlerts,
+        missedGapAlerts: prefs.missedGapAlerts,
+        themePreference: prefs.themePreference,
+        lastSyncAt: prefs.lastSyncAt ? new Date(prefs.lastSyncAt).toISOString() : null,
+      },
+      notifications: {
+        dailyAccountability: prefs.dailyAccountability,
+        weeklySummary: prefs.weeklySummary,
+        customGoalReminders: prefs.customGoalReminders,
+        deepFocusMode: prefs.deepFocusMode,
+        reflectionHour: prefs.reflectionHour,
+        reflectionMinute: prefs.reflectionMinute,
+        checkInFrequency: prefs.checkInFrequency,
+      },
+    },
+  });
 }
 
